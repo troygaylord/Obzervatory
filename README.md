@@ -10,14 +10,22 @@ A namespaced publisher / subscriber library with variable watching.
 - No DOM
 - No 3rd party libraries
 
+Going Local
+-----------
+
+To run all of the tests on Obzervatory, just download each of the files in the
+root folder of the project into a single folder on your local drive and view 
+tests.html in your browser.
+Lovely green boxes.
+
 Usage
 -----
 
-Below is a taste of some usage examples. More are to come.
+Below is a taste of what can be done with Obzervatory.
 
-When you're done with the examples below, you can look deeper into Obzervatory by
-checking out the tests.js file in the root of the project. It covers all of what 
-Obzervatory can do. We'll cover more of that here over time.
+When you're done with the few examples below (more examples will come), you can look 
+deeper into Obzervatory by checking out the tests.js file in the root of the project. 
+It covers all of what it can do.
 
 Basic Event Handling
 --------------------
