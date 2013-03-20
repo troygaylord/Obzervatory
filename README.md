@@ -1,10 +1,16 @@
 Obzervatory
-==========
+===========
 
-#### A namespaced publisher / subscriber library with variable watching.
+Namespaced publisher / subscriber library with variable watching.
 
 - No jQuery
 - No DOM
+- No 3rd party libraries
+
+Just some good event firing, variable watching fun.
+
+Usage
+-----
 
 Usage examples will be added shortly.
 

@@ -4,6 +4,8 @@
  *
  */
 
+// TODO: Finish the destruction tests then ensure test coverage.
+
 (function() {
 	'use strict';
 
