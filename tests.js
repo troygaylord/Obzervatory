@@ -21,7 +21,6 @@
 	module("Obzervatory Tests");
 	test('Basics', function() {
 		expect(8);
-		// To do, look in sinon for this sort of thing.
 		// Counter so we know how many times a function was hit
 		var listenCnt = 1;
 		// Here we go, create a 'people' namespace.
@@ -54,7 +53,7 @@
 			listenCnt++;
 			ok(true, 'Heard the singer ' + actions);
 		});
-		// Fire 'singer' events for our listenrs (onEvent) to catch.
+		// Fire 'singer' events for our listeners (onEvent) to catch.
 		people('artists').fireEvent('singer');
 		// Send parameters with the fireEvent this time.
 		people('artists').fireEvent('singer', ['singing', 'drumming']);
@@ -76,11 +75,10 @@
 
 		ok(oz.getNamespaceNames().length === 1, 
 			"There are '" + oz.getNamespaceNames().length + "' namespace(s). " + oz.getNamespaceNames());
-		//
-		// 'artist' variable handling.
-		//
+
 		model1().set('color', 'Red');
 		ok(model1().get('color') === 'Red', 'Color is "' + model1().get('color') + '".');
+
 		ok(oz('models')('model-1').get('color') === 'Red', 
 			'Color is "' + oz('models')('model-1').get('color') + '".');
 		oz('models').destroy();
@@ -92,6 +90,7 @@
 		// false so it won't create the default subject of 'models'
 		var models = oz('models', false);
 
+		// Just playing with alternative ways to do the same thing.
 		oz('models')('client').set('firstname', 'John');
 		models('client').set('lastname', 'Doe');
 
@@ -100,13 +99,14 @@
 			lastname: 'Jenkins'
 		});
 
-		// Catch all changes to lastname on all models.
+		// Catch changes to firstname on all models.
 		models('*').onChange('firstname', function(e) {
 			ok(true, 'Caught global change of "' +
 				e.topic + '" in "' +
 				e.subject + '" with new value of "' + e.value + '".');
 		});
 
+		// Catch changes to firstname on the person model
 		models('person').onChange('firstname', function(e) {
 			ok(true, 'Caught local change of "' +
 				e.topic +'" in "' +
@@ -132,28 +132,25 @@
 			firstname: 'Leroy',
 			lastname: 'Jenkins'
 		});
-
 		// Catch changes to firstname on person model.
 		models('person').onChange('firstname', function(e) {
 			ok(true, 'Caught local change of "' +
 				e.topic +'" in "' +
 				e.subject + '" with new value of "' + e.value + '".');
 		});
-		// Catch all changes to person model.
+		// Catch changes on all variables in the person model.
 		models('person').onChange(function(e) {
 			ok(true, 'Caught global topic change of "' +
 				e.topic +'" in "' +
 				e.subject + '" with new value of "' + e.value + '".');
 		});
-
-		// Catch all changes to lastname on all models.
+		// Catch changes to firstname on all models.
 		models('*').onChange('firstname', function(e) {
 			ok(true, 'Caught global change of "' +
 				e.topic + '" in "' +
 				e.subject + '" with new value of "' + e.value + '".');
 		});
-
-		// Catch changes to app subjects and all topics.
+		// Catch changes to all variables in all models
 		models('*').onChange(function(e) {
 			ok(true, 'Caught *.* change of "' +
 				e.topic + '" in "' +
@@ -248,7 +245,8 @@
 			ghostVal = null,
 			dummyHandle;
 
-		// Try to get the value of 'firstname' which doesn't exist yet. We expect it to be undefined.
+		// Try to get the value of 'firstname' which doesn't exist yet. 
+		// We expect it to be undefined.
 		ghostVal = tests('ghost').get('firstname');
 		ok(ghostVal === undefined, '"firstname" is undefined.');
 		// Now give firstname a value and check for it
@@ -303,7 +301,6 @@
 			}
 
 		}
-
 		// Calling with a valid 'subject' and 'type' but invalid 'topic'.
 		dummyHandle = {
             subject: 'ghost',
@@ -321,7 +318,6 @@
 				ok(false, 'delWatcher(null) failed with error: "' + msg + '"');
 			}
 		}
-
 		// Calling with a valid 'subject', 'type' and 'topic'.
 		dummyHandle = {
             subject: 'ghost',
@@ -352,7 +348,6 @@
 				ok(false, 'delWatcher(null) failed with error: "' + msg + '"');
 			}
 		}
-
 		// TODO: Ensure resets are working as expected.
 		tests.destroy();
 	});
