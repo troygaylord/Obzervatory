@@ -38,7 +38,7 @@ city.destroy();
 
 Making and playing with a live model
 ------------------------------------
-```
+``` javascript
 var models = oz.namespace('models');
 
 models('training').set({
@@ -71,7 +71,7 @@ models.destroy();
 
 #### Now the same thing but with chaining
 
-```
+``` javascript
 var models = oz('models');
 
 models('training').set(
