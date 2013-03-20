@@ -1,21 +1,22 @@
 /*!
- * Obzervatory JavaScript Library v1.0
+ * Obzervatory JavaScript Library v0.8
  *
  * Copyright (c) 2013, Troy Gaylord
  * Dual licensed under the MIT or GPL Version 2 licenses.
  *
 */
-/*
-TODO:
--   Allow a listener to be removed from a key. Currently you can
-    delete a key and all it's listeners but not just one listener.
--   Allow a single subject to be reset, rather than just all of Obzervatory.
--   Looks like 'unsubscribe' is only working for listeners. Need to
-    allow variable watching to be removed as well. Individually would be best rather
-    than unsubscribing both at the same time.
 
-Below gives a little context to the Obzervatory code
------------------------------------------------------
+/*
+
+TODO
+-----------------------------------------------------------
+-   Ensure unsubscribe and all destruction is working 
+    property, looks like it may only be working for 
+    listeners.
+
+
+Below gives some context to the Obzervatory code
+-----------------------------------------------------------
 var models = oz.createNamespace('models');
     models('person').get('firstname');
      /\       /\              /\
@@ -538,12 +539,18 @@ var obzervatory = (function (obzervatory) {
     // Hold all of the namespaces
     obzervatory.namespaces = [];
     obzervatory.namespace = function (namespace, autoGenerateSubject) {
-        if (namespace === undefined || namespace === null) {
-            throw "'namespace' parameter is required.";
-        }
         var retNamespace,
             ns,
             i;
+        if (namespace === undefined || namespace === null) {
+            throw "'namespace' parameter is required.";
+        }
+
+        // By default, automatically generate a subject named after the 
+        // namespace.
+        if (autoGenerateSubject === undefined) {
+            autoGenerateSubject = true;
+        }
 
         for (i = 0; i < this.namespaces.length; i += 1) {
             if (this.namespaces[i].name === namespace) {
@@ -562,22 +569,22 @@ var obzervatory = (function (obzervatory) {
         return retNamespace;
     };
     obzervatory.createNamespace = function (namespace) {
-        if (namespace === undefined || namespace === null) {
-            throw "'namespace' parameter required";
-        }
         var namespaceInfo = {
             name: namespace,
             oz: new obzervatory.Obzervatory(namespace)
         };
+        if (namespace === undefined || namespace === null) {
+            throw "'namespace' parameter required";
+        }
         this.namespaces.push(namespaceInfo);
         return namespaceInfo.oz;
     };
     obzervatory.getNamespace = function (namespace) {
+        var retNamespace,
+            i;
         if (namespace === undefined || namespace === null) {
             throw "'namespace' parameter required";
         }
-        var retNamespace,
-            i;
 
         for (i = 0; i < this.namespaces.length; i += 1) {
             if (this.namespaces[i].name === namespace) {
@@ -596,11 +603,11 @@ var obzervatory = (function (obzervatory) {
         return namespaceNames;
     };
     obzervatory.delNamespace = function (namespace) {
+        var success = false,
+            i;
         if (namespace === undefined || namespace === null) {
             throw "'namespace' parameter required";
         }
-        var success = false,
-            i;
         for (i = 0; i < this.namespaces.length; i += 1) {
             if (this.namespaces[i].name === namespace) {
                 // Set the invalid flag since we can delete the object

@@ -2,78 +2,73 @@
  *
  *	Obzervatory Tests
  *
- */
+*/
 
-// TODO: Finish the destruction tests then ensure test coverage.
+/*
+
+ TODO
+	-	Finish the destruction tests.
+	-	Pass jsLint.
+	-	Add more comments.
+	-	Tighten up existing tests.
+	-	Ensure test coverage.
+
+*/
 
 (function() {
 	'use strict';
-
 	var globalWatchCallCount = 1;
-
 	module("Obzervatory Tests");
-
-	function ozEventInfoToString(e) {
-		var infoBlock = ' | type = "' + e.type + '"' +
-			' | subject = "' + e.subject + '"' +
-			' | topic = "' + e.topic + '"';
-		if (e.hasOwnProperty('value')) {
-			infoBlock += ' | value = "' + e.value + '"';
-		}
-		return infoBlock;
-	}
-
 	test('Basics', function() {
 		expect(8);
+		// To do, look in sinon for this sort of thing.
+		// Counter so we know how many times a function was hit
 		var listenCnt = 1;
-		
-		// var artists = oz.namespace('artists');
-		var people = oz('people');
-		//
-		// 'artist' variable handling.
-		//
-		oz('people')('artists').set('artist', 'Tom Jones');
-
-		ok(people('artists').get('artist') === 'Tom Jones', people('artists').get('artist') + ' is the artist.');
-
-		// First on set and touch below
-		people('artists').onChange('artist', function(varDetails) {
-			ok(varDetails.value === 'Tom Waits', 'Tom Waits is now the artist');
+		// Here we go, create a 'people' namespace.
+		var people = oz.namespace('people');
+		// Create a subject called 'artists' in our people namespace.
+		// On this subject there is a topic called 'singer'.
+		people('artists').set('singer', 'Tom Jones');
+		// Ensure the singer has been set.
+		ok(people('artists').get('singer') === 'Tom Jones',
+			people('artists').get('singer') + ' is the singer.');
+		// Assert when 'singer' changes.
+		people('artists').onChange('singer', function(varDetails) {
+			ok(varDetails.value === 'Tom Waits', 'Tom Waits is now the singer');
 		});
-		people('artists').set('artist', 'Tom Waits');
-		people('artists').touch('artist');
-
-		//
-		// 'artist' event handling.
-		//
-		people('artists').onEvent('artist', function(e, action1, action2) {
+		people('artists').set('singer', 'Tom Waits');
+		people('artists').touch('singer');
+		// Listen for the 'singer' event. 
+		// Assert we're called at the right time with the right stuff.
+		people('artists').onEvent('singer', function(e, action1, action2) {
 			var actions = '';
 			switch (listenCnt) {
 			case 1:
-				ok(action1 === undefined && action2 === undefined, 'Shout out with no params.');
+				ok(action1 === undefined && action2 === undefined, 'onEvent with no params.');
 				break;
 			case 2:
 				ok(action1 === 'singing' && action2 ==='drumming',
-					this.get('artist') + ' is singing and drumming');
+					this.get('singer') + ' is singing and drumming');
 				break;
 			}
 			listenCnt++;
-			ok(true, 'Heard the artist ' + actions);
+			ok(true, 'Heard the singer ' + actions);
 		});
-
-		people('artists').fireEvent('artist');
-		people('artists').fireEvent('artist', ['singing', 'drumming']);
-
+		// Fire 'singer' events for our listenrs (onEvent) to catch.
+		people('artists').fireEvent('singer');
+		// Send parameters with the fireEvent this time.
+		people('artists').fireEvent('singer', ['singing', 'drumming']);
+		// We're done with the namespace, blow it away.
 		people.destroy();
+		// Fire the 'singer' event on the 'artists' namespace 
+		// and ensure it doesn't exist.
 		try {
-			people('artists').fireEvent('artist');
+			people('artists').fireEvent('singer');
 		} catch (e) {
 			ok(e.message === "Cannot call method 'fireEvent' of undefined", 
 				'"Artists" namespace is undefined.');
 		}
-
 	});
-
 
 	test('Basics on root of subject', function() {
 		expect(3);
@@ -91,11 +86,11 @@
 		oz('models').destroy();
 	});
 
-
 	test('Basic event handling in default subject.', function() {
 		expect(6);
 
-		var models = oz('models');
+		// false so it won't create the default subject of 'models'
+		var models = oz('models', false);
 
 		oz('models')('client').set('firstname', 'John');
 		models('client').set('lastname', 'Doe');
@@ -124,11 +119,11 @@
 		models.destroy();
 	});
 
-
 	test('Variable handling', function() {
 		expect(12);
 
-		var models = oz.namespace('models');
+		// false so it won't create the default subject of 'models'
+		var models = oz.namespace('models', false);
 
 		models('client').set('firstname', 'John');
 		models('client').set('lastname', 'Doe');
@@ -217,11 +212,11 @@
 	test('Chained work with models.', function() {
 		expect(5);
 
-		var models = oz.createNamespace('models');
+		var models = oz.namespace('models');
 
 		models('training').set(
 			{
-				course: 'JavaScript for Dummies',
+				course: 'Rocket Science for Dummies',
 				provider: 'The Learning Center',
 				cost: '2000',
 				days: '2',
@@ -236,7 +231,7 @@
 			})
 			.set('completed', true)
 			.set({
-				course: 'JavaScript for Dummies',
+				course: 'Rocket Science for Dummies',
 				provider: 'The Learning Center',
 				cost: '3000',
 				days: '2',
@@ -362,7 +357,6 @@
 		tests.destroy();
 	});
 
-
 	test('Playing with subject', function() {
 		expect(3);
 		var people = oz('people');
@@ -378,7 +372,6 @@
 
 		people.destroy();
 	});
-
 
 	test('Basic event handling', function() {
 		expect(6);
@@ -403,7 +396,6 @@
 		element().fireEvent('color', ['blue', 'red']);
 		element.destroy();
 	});
-
 
 	test('Basic variables handling in default namespace.', function() {
 		expect(9);
@@ -513,13 +505,12 @@
 		food.destroy();
 	});
 
-
 	test('Namespace access', function() {
 		expect(4);
-		var city = oz('city', true);
+		var city = oz('city');
 		
-		city().onChange('population', function() {
-			ok(true, '"population has changed"');
+		city().onChange('population', function(e) {
+			ok(true, 'The ' + e.topic + ' in the ' + e.subject + ' is ' + e.value);
 		});
 
 		city().set('population', 10000);
@@ -590,4 +581,15 @@
 	// 	// 0 asserts
 	// 	bb('topic10').in('*').shout();
 	// });
+
+	// For display purposes, converts an oz event info object to a string.
+	function ozEventInfoToString(e) {
+		var infoBlock = ' | type = "' + e.type + '"' +
+			' | subject = "' + e.subject + '"' +
+			' | topic = "' + e.topic + '"';
+		if (e.hasOwnProperty('value')) {
+			infoBlock += ' | value = "' + e.value + '"';
+		}
+		return infoBlock;
+	}
 })();
