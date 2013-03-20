@@ -17,7 +17,7 @@ TODO
 
 Below gives some context to the Obzervatory code
 -----------------------------------------------------------
-var models = oz.createNamespace('models');
+var models = oz.namespace('models');
     models('person').get('firstname');
      /\       /\              /\
      |        |               |
