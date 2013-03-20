@@ -42,7 +42,7 @@ var obzervatory = (function (obzervatory) {
     };
 
     // The Obzervatory class. 
-    // This is the guys of the variable and event handling.
+    // This is the guts of the variable and event handling.
     obzervatory.Obzervatory = function (namespace) {
         var pub,  // Public methods & properties
             pvt;  // Private methods & properties
