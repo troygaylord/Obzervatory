@@ -59,7 +59,7 @@ models('training').onChange(function(e) {
 
 models('training').set('completed', true);
 models('training').set({
-	course: 'JavaScript for Dummies',
+	course: 'Rocket Science for Dummies',
 	provider: 'The Learning Place',
 	cost: '3000',
 	days: '2',
