@@ -1,4 +1,4 @@
-Obzervatory
+Obzervatory aka oz
 ===========
 
 A namespaced publisher / subscriber library with variable watching.

@@ -12,6 +12,7 @@
 	-	Add more comments.
 	-	Tighten up existing tests.
 	-	Ensure test coverage.
+	-	Add ability to observe deletion of variables and other activities.
 
 */
 
