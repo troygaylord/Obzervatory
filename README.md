@@ -5,7 +5,7 @@ A namespaced publisher / subscriber library with variable watching.
 
 - Extensive test coverage
 - Passes jsLint
-- Works on client and server (NodeJS for instance)
+- Works on client and server (i.e. NodeJS)
 - No jQuery
 - No DOM
 - No 3rd party libraries
@@ -53,7 +53,7 @@ models('training').onEvent('save', function(e) {
 	// Save the model
 });
 
-// Fires twice, one for the setting of 'complete' to true
+// Fires twice, once for the setting of 'complete' to true
 // and once when cost changing from 2000 to 3000.
 models('training').onChange(function(e) {
 	models('training').fireEvent('save');
