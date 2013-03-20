@@ -24,7 +24,7 @@ Basic Event Handling
 var city = oz.namespace('city');
 
 city().onChange('population', function(e) { 
-  // Logs "The population in the city is 10000" on the first call
+ 	// Logs "The population in the city is 10000" on the first call
 	// and  "The population in the city is 11000" on the second
 	console.log('The ' + e.topic + ' in the ' + e.subject + ' is ' + e.value);
 });
