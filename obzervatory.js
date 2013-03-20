@@ -13,6 +13,7 @@ TODO
 -   Ensure unsubscribe and all destruction is working 
     property, looks like it may only be working for 
     listeners.
+-   Ensure all comments are up to date. 
 
 
 Below gives some context to the Obzervatory code
