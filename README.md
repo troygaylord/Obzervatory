@@ -3,14 +3,12 @@ Obzervatory
 
 A namespaced publisher / subscriber library with variable watching.
 
-- No jQuery
-- No DOM
-- No 3rd party libraries
 - Extensive test coverage
 - Passes jsLint
 - Works on client and server (NodeJS for instance)
-
-Just a good time with some event firing, variable watching fun.
+- No jQuery
+- No DOM
+- No 3rd party libraries
 
 Usage
 -----
