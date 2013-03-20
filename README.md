@@ -56,7 +56,7 @@ models('training').onEvent('save', function(e) {
 });
 
 // Fires twice, one for the setting of 'complete' to true
-// and once when cost changes from 2000 to 3000.
+// and once when cost changing from 2000 to 3000.
 models('training').onChange(function(e) {
 	models('training').fireEvent('save');
 });
@@ -91,7 +91,7 @@ models('training').set(
 	})
 	.onChange(function(e) {
 		// onChange Fires twice, once for the setting of 'complete' to true
-		// and once when cost changes from 2000 to 3000.
+		// and once when cost changing from 2000 to 3000.
 		models('training').fireEvent('save');
 	})
 	.set('completed', true)
