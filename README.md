@@ -1,11 +1,11 @@
 Obzervatory
 ==========
 
-#### A namespaced PubSub, variable watching JavaScript object.
+#### A namespaced publisher / subscriber library with variable watching.
 
-Usage examples will be added shortly.  
+- No jQuery
+- No DOM
+
+Usage examples will be added shortly.
 
 In the meantime, you can take a look at tests.js which demonstrates the functionality.
-In particular, look at the "Tutorial" module.
-
-Tests can be seen running [here](http://texttotehrd.appspot.com/maddythegoose/bb.testbed.html) and there are more tests to come.
