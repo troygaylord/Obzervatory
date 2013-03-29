@@ -26,9 +26,8 @@
 	// TODO: Pass context of Obzervatory to events. Doesn't have to be 'this'.
 	test('Tabs Example', function() {
 		expect(3);
-		var tabs = oz('tabs');
 
-		tabs.defaultVals({
+		var tabs = oz('tabs', {
 			selected: false,
 			caption: 'Default Caption'
 		});

@@ -38,8 +38,8 @@ var obzervatory = (function (obzervatory) {
     //      oz.namespace('thenamespace').onChange(...)
     // into:
     ///     oz('thenamespace').onChange(...)
-    obzervatory = function (namespace, autoGenerateSubject) {
-        return obzervatory.namespace(namespace, autoGenerateSubject);
+    obzervatory = function (namespace, defaultVals, autoGenerateSubject) {
+        return obzervatory.namespace(namespace, defaultVals, autoGenerateSubject);
     };
 
     // The Obzervatory class. 
@@ -593,12 +593,21 @@ var obzervatory = (function (obzervatory) {
 
     // Hold all of the namespaces
     obzervatory.namespaces = [];
-    obzervatory.namespace = function (namespace, autoGenerateSubject) {
-        var retNamespace,
+    obzervatory.namespace = function (namespace, defaultVals, autoGenerateSubject) {
+        var useDefaults = false,
+            retNamespace,
             ns,
             i;
+
         if (namespace === undefined || namespace === null) {
             throw "'namespace' parameter is required.";
+        }
+        // If defaultVals is a boolean and not an object, the caller wants to 
+        // skip the setting of default values so ignore it and bump up autoGenerateSubject.
+        if (typeof namespace === 'string' && typeof defaultVals === 'boolean') {
+            autoGenerateSubject = defaultVals;
+        } else if (typeof namespace === 'string' && typeof defaultVals === 'object') {
+            useDefaults = true;
         }
 
         // By default, automatically generate a subject named after the 
@@ -620,6 +629,9 @@ var obzervatory = (function (obzervatory) {
             } else {
                 retNamespace = this.createNamespace(namespace);
             }
+        }
+        if (useDefaults) {
+            retNamespace.defaultVals(defaultVals);
         }
         return retNamespace;
     };
