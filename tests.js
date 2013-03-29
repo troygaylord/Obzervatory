@@ -26,13 +26,18 @@
 
 	// TODO: Pass context of Obzervatory to events. Doesn't have to be 'this'.
 	test('Tabs Example', function() {
-		expect(11);
+		expect(19);
 
 		// Create our 'tab' namespace and set some default values for all
 		// new subjects that are created in this namespace.
 		var tabs = oz('tabs', {
 			selected: false,
 			caption: 'Default Caption'
+		});
+
+		// Listens and watches all activity on all subjects and topics.
+		tabs.observe(function(e) {
+			ok(true, 'Observed: ' + ozEventInfoToString(e));
 		});
 
 		// Setup our tabs, ready to listen for events and watch variables.
@@ -103,7 +108,16 @@
 
 		// Only two change events will fire from this since the 'selected' value
 		// for tab1 is already true.
-		tabs('*').set('selected', true);
+		// tabs('*').set('selected', true);
+		tabs('*').set('selected', false);
+		tabs('tab3').set({ selected: true }, true);
+
+		ok(tabs('tab1').get('selected') === false,
+			'Tab1 has the "selected" value of "' + tabs('tab1').get('selected') + '".');
+		ok(tabs('tab2').get('selected') === false,
+			'Tab2 has the "selected" value of "' + tabs('tab2').get('selected') + '".');
+		ok(tabs('tab3').get('selected') === true,
+			'Tab3 has the "selected" value of "' + tabs('tab3').get('selected') + '".');
 
 		// tabs('tab1').set({ selected: true });
 		tabs.destroy();
