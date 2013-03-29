@@ -56,6 +56,7 @@ var obzervatory = (function (obzervatory) {
         pub = {
             invalid: false,
             namespace: namespace,
+            defaultValues: {},
             reset: function () {
                 pub.subjects = {};
                 pub.globals = { listeners: {}, watchers: {}, observers: [] };
@@ -64,13 +65,12 @@ var obzervatory = (function (obzervatory) {
 
             // Returns the namespace with '*' set as the default subject.
             getNamespace: function () {
-                return pub.getSubject();
+                return this.getSubject();
             },
 
             // Create a new subject and set it as the default namespace.
             createSubject: function (subject) {
                 pvt.buildSubject(subject);
-                pub.defaultSubject = subject;
                 return this.getSubject(subject);
             },
 
@@ -81,13 +81,32 @@ var obzervatory = (function (obzervatory) {
             //       working with 'subject'.
             getSubject: function (subject) {
                 var setNs,
-                    defaultSubject = subject;
+                    defaultSubject = subject,
+                    self = this;
 
                 setNs = function (subject) {
+                    // self = this;
+                    // If we were destroyed, invalid is set to true.
                     if (pub.invalid) {
+                        debugger;
                         return undefined;
                     }
                     subject = subject || defaultSubject;
+
+                    // if (subject) {
+                    //     pvt.buildSubject(subject);
+                    // }
+
+                    // // // If the subject doesn't exist yet and we have default values, 
+                    // // // apply the values to the new subject.
+                    // if (!pub.subjects.hasOwnProperty(subject)) {
+                    //     // pub.getSubject(subject)().set({ defaultkey: 'default value' });
+                    //     // this(subject)().set({ defaultkey: 'default value' });
+                    //     // TODO: Not a great way to reference the subject. Do it better.
+                    //     // obzervatory(subject).set(obzervatory(subject).defaultValues);
+                    //     // obzervatory(subject).set(obzervatory(subject).defaultValues);
+                    // }
+
                     // subject = subject || defaultSubject || '*';
                     pub.defaultSubject = subject;
                     return pub;
@@ -110,6 +129,15 @@ var obzervatory = (function (obzervatory) {
                 setNs.defaultSubject = function (subject) {
                     return pub.createSubject(subject);
                 };
+
+                setNs.defaultVals = function (values) {
+                    if (values === undefined || values === null) {
+                        return pub.defaultValues;
+                    } else {
+                        pub.defaultValues = values || {};
+                    }
+                }
+                // setNs.defaultValues = {};
 
                 // setNs.defaultTopic = subject;
                 return setNs;
@@ -177,7 +205,7 @@ var obzervatory = (function (obzervatory) {
                     if (topics[i].callback === undefined || topics[i].callback === null) {
                         throw "No callback defined for watcher.";
                     }
-
+                    topicDetails[0].self = this;
                     // If we have observers, they fire on everything so fire 
                     // applicable observers first.
                     observers = pub.globals.observers;
@@ -211,7 +239,8 @@ var obzervatory = (function (obzervatory) {
                     pvt.ensureProperty(pub.globals.listeners, topicInfo.topic, []).push(topicInfo);
                 } else {
                     // TODO: Pull these together somehow. Too many trips, too much the same.
-                    pvt.ensureProperty(pub.subjects, topicInfo.subject);
+                    // pvt.ensureProperty(pub.subjects, topicInfo.subject);
+                    pvt.ensureSubject(topicInfo.subject);
                     pvt.ensureProperty(pub.subjects[topicInfo.subject], 'listeners');
                     pvt.ensureProperty(pub.subjects[topicInfo.subject].listeners,
                         topicInfo.topic, []).push(topicInfo);
@@ -519,18 +548,43 @@ var obzervatory = (function (obzervatory) {
             },
 
             // If the given attribute doesn't exist on obj, create it.
-            // Returns true if it was already there, false if not.
-            buildSubject: function (attr, defaultValue) {
-                this.ensureProperty(pub.subjects, attr, defaultValue);
+            buildSubject: function (subject, defaultValue) {
+                var subjectExists = !!pub.subjects[subject],
+                    retSubject = this.ensureProperty(pub.subjects, subject, defaultValue),
+                    defaultValues;
+
+                // If the subject didn't already exists, add the defaultValues to it
+                // if they're available.
+                if (subjectExists === false) {
+                    defaultValues = obzervatory.defaultValues;
+                    if (typeof defaultValues === 'object') {
+                        obzervatory(subject).set(defaultvalues);
+                    }
+                }
+                return retSubject;
             },
 
             // If the given attribute doesn't exist on obj, create it.
-            // Returns true if it was already there, false if not.
             ensureProperty: function (obj, property, defaultValue) {
+                var subjectExisted = true;
+                // The subject doesn't exist yet so create it.
+                // If there are default values, set them up here.
                 if (!obj[property]) {
                     obj[property] = defaultValue || {};
+                    subjectExisted = false;
                 }
                 return obj[property];
+            },
+
+            // If the given attribute doesn't exist on obj, create it.
+            ensureSubject: function (subject, defaultValue) {
+                // If the subject didn't already exist, make sure it gets its 
+                // default values.
+                var subjectDidntExist = !pub.subjects[subject];
+                pvt.ensureProperty(pub.subjects, subject, defaultValue);
+                if (subjectDidntExist && Object.keys(pub.defaultValues).length > 0) {
+                    pub.set(pub.defaultValues);
+                }
             }
         };
 

@@ -13,13 +13,75 @@
 	-	Tighten up existing tests.
 	-	Ensure test coverage.
 	-	Add ability to observe deletion of variables and other activities.
-
+	- 	When a namespace isn't destroyed there can be issues with every second load thinking
+		it's there. For example, take out the tabs.destroy on 'Tabs Example' the 
+		'Basics on root of subject' test fails every second refresh.
 */
 
 (function() {
 	'use strict';
 	var globalWatchCallCount = 1;
 	module("Obzervatory Tests");
+
+	// TODO: Pass context of Obzervatory to events. Doesn't have to be 'this'.
+	test('Tabs Example', function() {
+		expect(3);
+		var tabs = oz('tabs');
+
+		tabs.defaultVals({
+			selected: false,
+			caption: 'Default Caption'
+		});
+
+		tabs('tab1')
+			.onEvent('save', function(e) {
+				ok(true, e.subject + " has saved.");
+			})
+			.onEvent('close', function(e) {
+				ok(true, e.subject + " has closed.");
+				this.fireEvent('save');
+			});
+
+		tabs('tab1').fireEvent('close');
+
+		ok(tabs('tab1').get('caption') === tabs.defaultVals().caption, 
+			'Tab1 has the default caption of "' + tabs('tab1').get('caption') + '".');
+
+		// tabs('tab1')
+		// 	.set(defaults)
+		// 	.onChange('selected', function(e) {
+		// 		ok(true, 'Tab1 selected state is ' + e.value);
+		// 		tabs('*').set({ selected: false })
+		// 		tabs('tab1').set({ selected: true }, true)
+		// 	})
+		// 	.onEvent('close', function(e) {
+		// 		ok(true, 'Tab1 close');
+		// 	})
+
+		// tabs('tab2')
+		// 	.set(defaults)
+		// 	.onChange('selected', function(e) {
+		// 		ok(true, 'Tab2 selected');
+		// 	})
+		// 	.onEvent('close', function(e) {
+		// 		ok(true, 'Tab2 close');
+		// 	})
+
+		// tabs('tab3')
+		// 	.set(defaults)
+		// 	.onChange('selected', function(e) {
+		// 		ok(true, 'Tab3 selected');
+		// 	})
+		// 	.onEvent('close', function(e) {
+		// 		ok(true, 'Tab3 close');
+		// 	})
+
+		// tabs('tab1').set({ selected: true });
+		tabs.destroy();
+
+	});
+
+
 	test('Basics', function() {
 		expect(8);
 		// Counter so we know how many times a function was hit
