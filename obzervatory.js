@@ -314,7 +314,7 @@ var obzervatory = (function (obzervatory) {
                             }
                         }
                     } else {
-                        pvt.ensureProperty(pub.subjects, topicInfo.subject);
+                        pvt.ensureSubject(topicInfo.subject);
                         vars = pvt.ensureProperty(pub.subjects[topicInfo.subject], 'vars');
                         // If the topic hasn't been created yet or the topics value
                         // is different than the new value provided, set the value.
@@ -352,7 +352,7 @@ var obzervatory = (function (obzervatory) {
                     pvt.ensureProperty(pub.globals.watchers, topicInfo.topic, [])
                         .push(topicInfo);
                 } else {
-                    pvt.ensureProperty(pub.subjects, topicInfo.subject);
+                    pvt.ensureSubject(topicInfo.subject);
                     pvt.ensureProperty(pub.subjects[topicInfo.subject], 'watchers');
                     pvt.ensureProperty(pub.subjects[topicInfo.subject].watchers,
                         topicInfo.topic, []).push(topicInfo);
@@ -550,7 +550,7 @@ var obzervatory = (function (obzervatory) {
             // If the given attribute doesn't exist on obj, create it.
             buildSubject: function (subject, defaultValue) {
                 var subjectExists = !!pub.subjects[subject],
-                    retSubject = this.ensureProperty(pub.subjects, subject, defaultValue),
+                    retSubject = this.ensureSubject(subject, defaultValue),
                     defaultValues;
 
                 // If the subject didn't already exists, add the defaultValues to it
@@ -594,7 +594,7 @@ var obzervatory = (function (obzervatory) {
     // Hold all of the namespaces
     obzervatory.namespaces = [];
     obzervatory.namespace = function (namespace, defaultVals, autoGenerateSubject) {
-        var useDefaults = false,
+        var usedDefaults = false,
             retNamespace,
             ns,
             i;
@@ -607,7 +607,7 @@ var obzervatory = (function (obzervatory) {
         if (typeof namespace === 'string' && typeof defaultVals === 'boolean') {
             autoGenerateSubject = defaultVals;
         } else if (typeof namespace === 'string' && typeof defaultVals === 'object') {
-            useDefaults = true;
+            usedDefaults = true;
         }
 
         // By default, automatically generate a subject named after the 
@@ -629,9 +629,11 @@ var obzervatory = (function (obzervatory) {
             } else {
                 retNamespace = this.createNamespace(namespace);
             }
-        }
-        if (useDefaults) {
-            retNamespace.defaultVals(defaultVals);
+            if (usedDefaults) {
+                // debugger;
+                // obzervatory(namespace).defaultVals(defaultVals);
+                retNamespace.defaultVals(defaultVals);
+            }
         }
         return retNamespace;
     };

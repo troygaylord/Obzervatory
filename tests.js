@@ -16,6 +16,7 @@
 	- 	When a namespace isn't destroyed there can be issues with every second load thinking
 		it's there. For example, take out the tabs.destroy on 'Tabs Example' the 
 		'Basics on root of subject' test fails every second refresh.
+	-	Add dirty values indicator.
 */
 
 (function() {
@@ -25,55 +26,57 @@
 
 	// TODO: Pass context of Obzervatory to events. Doesn't have to be 'this'.
 	test('Tabs Example', function() {
-		expect(3);
+		expect(4);
 
+		// Create our 'tab' namespace and set some default values for all
+		// new subjects that are created in this namespace.
 		var tabs = oz('tabs', {
 			selected: false,
 			caption: 'Default Caption'
 		});
 
+		// Create our first subject, 'tab1'. 
+		// Attach a couple of event handlers to listen for 'save' and 'close' events.
 		tabs('tab1')
+			.onChange('selected', function(e) {
+				ok(true, 'Tab1 "selected" changed to "' + e.value + '".');
+			})
 			.onEvent('save', function(e) {
+				// Do your AJAX call to save your goods.
+				ok(true, e.subject + " has saved.");
+			})
+
+		tabs('tab2')
+			.onChange('selected', function(e) {
+				ok(true, 'Tab2 "selected" changed to "' + e.value + '".');
+			})
+			.onEvent('save', function(e) {
+				// Do your AJAX call to save your goods.
 				ok(true, e.subject + " has saved.");
 			})
 			.onEvent('close', function(e) {
-				ok(true, e.subject + " has closed.");
+				ok(true, 'Tab2 close');
 				this.fireEvent('save');
-			});
+			})
 
-		tabs('tab1').fireEvent('close');
+		tabs('tab3')
+			.onChange('selected', function(e) {
+				ok(true, 'Tab3 "selected" changed to "' + e.value + '".');
+			})
+			.onEvent('close', function(e) {
+				ok(true, 'Tab3 close');
+			})
 
-		ok(tabs('tab1').get('caption') === tabs.defaultVals().caption, 
-			'Tab1 has the default caption of "' + tabs('tab1').get('caption') + '".');
+		// We haven't set any values directly on 'tab1' yet but let's make sure
+		// we got our defaults.
+		ok(tabs('tab1').get('caption') === tabs.defaultVals().caption,
+			'Tab1 has the default "caption" of "' + tabs('tab1').get('caption') + '".');
 
-		// tabs('tab1')
-		// 	.set(defaults)
-		// 	.onChange('selected', function(e) {
-		// 		ok(true, 'Tab1 selected state is ' + e.value);
-		// 		tabs('*').set({ selected: false })
-		// 		tabs('tab1').set({ selected: true }, true)
-		// 	})
-		// 	.onEvent('close', function(e) {
-		// 		ok(true, 'Tab1 close');
-		// 	})
+		ok(tabs('tab1').get('selected') === tabs.defaultVals().selected,
+			'Tab1 has the default "selected" value of "' + tabs('tab1').get('selected') + '".');
 
-		// tabs('tab2')
-		// 	.set(defaults)
-		// 	.onChange('selected', function(e) {
-		// 		ok(true, 'Tab2 selected');
-		// 	})
-		// 	.onEvent('close', function(e) {
-		// 		ok(true, 'Tab2 close');
-		// 	})
-
-		// tabs('tab3')
-		// 	.set(defaults)
-		// 	.onChange('selected', function(e) {
-		// 		ok(true, 'Tab3 selected');
-		// 	})
-		// 	.onEvent('close', function(e) {
-		// 		ok(true, 'Tab3 close');
-		// 	})
+		// Fire the close event which will then trigger the save event.
+		tabs('tab2').fireEvent('close');
 
 		// tabs('tab1').set({ selected: true });
 		tabs.destroy();
