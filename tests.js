@@ -26,7 +26,7 @@
 
 	// TODO: Pass context of Obzervatory to events. Doesn't have to be 'this'.
 	test('Tabs Example', function() {
-		expect(4);
+		expect(11);
 
 		// Create our 'tab' namespace and set some default values for all
 		// new subjects that are created in this namespace.
@@ -35,54 +35,79 @@
 			caption: 'Default Caption'
 		});
 
-		// Create our first subject, 'tab1'. 
-		// Attach a couple of event handlers to listen for 'save' and 'close' events.
+		// Setup our tabs, ready to listen for events and watch variables.
 		tabs('tab1')
+			.set({
+				selected: true
+			 })
 			.onChange('selected', function(e) {
-				ok(true, 'Tab1 "selected" changed to "' + e.value + '".');
+				ok(true, 'Tab1 "selected" changed: ' + ozEventInfoToString(e));
+			})
+			.onEvent('tear-off', function(e) {
+				ok(true, 'Tab1 "tear-off" event: ' + ozEventInfoToString(e));
 			})
 			.onEvent('save', function(e) {
-				// Do your AJAX call to save your goods.
-				ok(true, e.subject + " has saved.");
-			})
-
+				ok(true, 'Tab1 "save" event: ' + ozEventInfoToString(e));
+			});
 		tabs('tab2')
+			.set({
+				caption: 'Tab Two'
+			 })
 			.onChange('selected', function(e) {
-				ok(true, 'Tab2 "selected" changed to "' + e.value + '".');
+				ok(true, 'Tab2 "selected" changed: ' + ozEventInfoToString(e));
+			})
+			.onEvent('tear-off', function(e) {
+				ok(true, 'Tab2 "tear-off" event: ' + ozEventInfoToString(e));
 			})
 			.onEvent('save', function(e) {
-				// Do your AJAX call to save your goods.
-				ok(true, e.subject + " has saved.");
+				ok(true, 'Tab2 "save" event: ' + ozEventInfoToString(e));
 			})
 			.onEvent('close', function(e) {
-				ok(true, 'Tab2 close');
+				ok(true, 'Tab2 "close" event: ' + ozEventInfoToString(e));
 				this.fireEvent('save');
-			})
-
+			});
 		tabs('tab3')
+			.set({
+				caption: 'Tab Three'
+			 })
 			.onChange('selected', function(e) {
-				ok(true, 'Tab3 "selected" changed to "' + e.value + '".');
+				ok(true, 'Tab3 "selected" changed: ' + ozEventInfoToString(e));
+			})
+			.onEvent('tear-off', function(e) {
+				ok(true, 'Tab3 "tear-off" event: ' + ozEventInfoToString(e));
 			})
 			.onEvent('close', function(e) {
-				ok(true, 'Tab3 close');
-			})
+				ok(true, 'Tab3 "close" event: ' + ozEventInfoToString(e));
+			});
 
-		// We haven't set any values directly on 'tab1' yet but let's make sure
-		// we got our defaults.
+		// Make sure we have the right default values.
 		ok(tabs('tab1').get('caption') === tabs.defaultVals().caption,
-			'Tab1 has the default "caption" of "' + tabs('tab1').get('caption') + '".');
-
-		ok(tabs('tab1').get('selected') === tabs.defaultVals().selected,
-			'Tab1 has the default "selected" value of "' + tabs('tab1').get('selected') + '".');
+			'Tab1 has the "caption" of "' + tabs('tab1').get('caption') + '".');
+		ok(tabs('tab2').get('caption') === 'Tab Two',
+			'Tab2 has the "caption" of "' + tabs('tab2').get('caption') + '".');
+		ok(tabs('tab2').get('selected') === tabs.defaultVals().selected,
+			'Tab1 has the "selected" value of "' + tabs('tab2').get('selected') + '".');
+		// The default was false for tab1 but we overrode it when creating it.
+		ok(tabs('tab1').get('selected') === true,
+			'Tab1 has the "selected" value of "' + tabs('tab1').get('selected') + '".');
 
 		// Fire the close event which will then trigger the save event.
 		tabs('tab2').fireEvent('close');
 
+		// Fire the tear-off event individually for each tab.
+		tabs('tab1').fireEvent('tear-off');
+		tabs('tab2').fireEvent('tear-off');
+		tabs('tab3').fireEvent('tear-off');
+		// Does the same as the three lines above.
+		tabs('*').fireEvent('tear-off');
+
+		// Only two change events will fire from this since the 'selected' value
+		// for tab1 is already true.
+		tabs('*').set('selected', true);
+
 		// tabs('tab1').set({ selected: true });
 		tabs.destroy();
-
 	});
-
 
 	test('Basics', function() {
 		expect(8);
