@@ -474,6 +474,16 @@ var obzervatory = (function (obzervatory) {
                     }
                 }
             },
+            
+            destroy: function () {
+                var ns;
+                for (ns in pub.subjects) {
+                    if (pub.defaultSubject === '*' || 
+                            (pub.subjects.hasOwnProperty(ns) && ns === pub.defaultSubject)) {
+                        delete pub.subjects[ns];
+                    }
+                }
+            },
 
             result: null
         };
@@ -500,11 +510,26 @@ var obzervatory = (function (obzervatory) {
             // (i.e. 'thetopic.thesubject').
             // Return an object with the parsed topic and subject, if subject
             // isn't provided use the default subject.
-            parseTopic: function (topic) {
-                var topicSplit = topic.split('.');
+            // parseTopic: function (topic) {
+            //     var topicSplit = topic.split('.');
+            //     return {
+            //         topic: topicSplit[0],
+            //         subject: (topicSplit.length > 1 ? topicSplit[1] : pub.defaultSubject)
+            //     };
+            // },
+            parseTopic: function (_topic) {
+                var topicSplit,
+                    topic,
+                    excludeSubject;
+
+                topicSplit = _topic.split(':-');
+                topic = topicSplit[0];
+                excludeSubject = topicSplit[1]
+
                 return {
-                    topic: topicSplit[0],
-                    subject: (topicSplit.length > 1 ? topicSplit[1] : pub.defaultSubject)
+                    topic: topic,
+                    subject: pub.defaultSubject,
+                    excludeSubject: excludeSubject
                 };
             },
             // Return all of the subscribers to the subject/topic that match the given
@@ -585,6 +610,7 @@ var obzervatory = (function (obzervatory) {
                 if (subjectDidntExist && Object.keys(pub.defaultValues).length > 0) {
                     pub.set(pub.defaultValues);
                 }
+                return pub.subjects[subject];                
             }
         };
 
@@ -671,6 +697,9 @@ var obzervatory = (function (obzervatory) {
         }
         return namespaceNames;
     };
+
+
+
     obzervatory.delNamespace = function (namespace) {
         var success = false,
             i;
@@ -694,6 +723,36 @@ var obzervatory = (function (obzervatory) {
         }
         return success;
     };
+    obzervatory.delNamespace = function (namespace) {
+        var success = false,
+            i;
+        if (namespace === undefined || namespace === null) {
+            throw "'namespace' parameter required";
+        }
+        // TODO: Ensure there's nothing left of our objects in the namespace when it's deleted.
+        // // delete all subjects
+        // this(namespace)('*').destroy();
+        // // delete all globals
+        // this(namespace).destroyGlobals();
+
+        for (i = 0; i < this.namespaces.length; i += 1) {
+            if (this.namespaces[i].name === namespace) {
+                // Set the invalid flag since we can delete the object
+                // from our array, but any other variables pointing to it
+                // will remain active. We want to make sure it's no longer
+                // funcional.
+                this.namespaces[i].oz().invalid = true;
+                // Kill it in memory
+                delete this.namespaces[i];
+                // Kill it in our namespace array.
+                this.namespaces.splice(i, 1);
+                success = true;
+                break;
+            }
+        }
+        return success;
+    };
+
 
     return obzervatory;
 }(obzervatory));
