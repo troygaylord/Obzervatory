@@ -26,7 +26,58 @@
 	module("Obzervatory Tests");
 
 	// TODO: Pass context of Obzervatory to events. Doesn't have to be 'this'.
+	test('Global Functions and Variables', function() {
+		expect(9);
+
+		// Create our 'tab' namespace and set some default values for all
+		// new subjects that are created in this namespace.
+		var tabs = oz('tabs', {
+			selected: false,
+			caption: 'Default Caption',
+			save: function(e) {
+				ok(true, e.subject + " has saved in global.");
+			},
+			onChange: {
+				selected: function(e) {
+					ok(true, e.subject + ' "' + e.topic + '" changed in global to "' + e.value + '".');
+				}
+			}
+		}, false);
+
+		var defaultTab1Vals = tabs('tab1').get();
+
+		// Create our first subject, 'tab1'. 
+		// Attach a couple of event handlers to listen for 'save' and 'close' events.
+		tabs('tab1')
+			.onChange('selected', function(e) {
+				this.fireSuper(e);
+				ok(true, 'Tab1 "selected" changed in Tab1 onChange to "' + e.value + '".');
+			})
+			.onEvent('save', function(e) {
+				ok(true, e.subject + " has saved in Tab1.");
+				this.fireSuper(e);
+			});
+
+		tabs('tab2')
+			.onEvent('close', function(e) {
+				ok(true, 'Tab2 close');
+				this.fireEvent('save');
+			});
+
+		tabs('tab1').fireEvent('save');
+		tabs('tab2').fireEvent('save');
+		tabs('*').fireEvent('save');
+		tabs('*').set('selected', true);
+
+		tabs('tab1').set(defaultTab1Vals);
+
+		tabs.destroy();
+	});
+
+
+	// TODO: Pass context of Obzervatory to events. Doesn't have to be 'this'.
 	test('Tabs Example', function() {
+		// TODO: Double check this number.
 		expect(38);
 
 		// Create our 'tab' namespace and set some default values for all
@@ -44,18 +95,17 @@
 		tabs('tab1')
 			.onChange('selected', function(e) {
 				ok(true, 'Tab1 "selected" changed to "' + e.value + '".');
+				this.fireEvent('save');
 			})
 			.onEvent('save', function(e) {
 				ok(true, e.subject + " has saved.");
 			});
-
 		tabs('tab2')
 			.onChange('selected', function(e) {
 				ok(true, 'Tab2 "selected" changed to "' + e.value + '".');
 			})
 			.onEvent('close', function(e) {
 				ok(true, 'Tab2 close');
-				this.fireEvent('save');
 			});
 
 		tabs('tab3')
@@ -103,7 +153,6 @@
 		ok(tabs('tab3').get('selected') === false, 'Tab3 "selected" = ' + tabs('tab3').get('selected'));
 
 		tabs('*').touch('selected');
-		// tabs('*').fireEvent('save');5
 
 		// Example of accessing a subject via a variable, well... function really but
 		// the point is, you can "set it and forget it".
@@ -113,7 +162,6 @@
 
 		tabs.destroy();
 	});
-
 
 	test('Basics', function() {
 		expect(8);
@@ -640,8 +688,11 @@
 		ns.destroy();
 	});
 
+
+	// Test Bed for sample in README.MD
+	//
 	// test('TEMP Tab example', function() {
-	// 	expect(32);
+	// 	expect(0);
 
 	// 	// Dummy 'database' object to mock with.
 	// 	var db = { 
@@ -656,52 +707,52 @@
 	// 		selected: false,
 	// 		saved: false,
 	// 		caption: 'Unnamed Tab',
-	// 		content: 'Default content'
+	// 		content: 'Default content',
+	// 		save: function(e) {
+	// 			db.save(this.get());
+	// 			this.set({ saved: true });
+	// 		},
+	// 		close: function(e) {
+	// 			this.fireEvent('save');
+	// 		},
+	// 		onChange: {
+	// 			// '*': function(e) {
+	// 			// 	alert('caught global change in tabs.');
+	// 			// 	this.fireEvent('save');
+	// 			// }
+	// 			selected: function(e) {
+	// 			},
+	// 			caption: function(e) {
+	// 			}
+	// 		}
 	// 	});
 
 	// 	tabs('tab1')
 	// 		.set({
 	// 			caption: 'First Tab'
 	// 		})
-	// 		// Capture the change of any oz variable in the tab1 subject.
-	// 		.onChange('*', function(e) {
-	// 			this.set({ saved: false })
-	// 		})
 	// 		.onEvent('save', function(e) {
-	// 			db.save(this.get());
-	// 			this.set({ saved: true });
-	// 		})
-	// 		.onEvent('close', function(e) {
-	// 			this.fireEvent('save');
-	// 			// ... perform closing operations.
+	// 			// ... custom code ...
+	// 			this.fireSuper(e);
+	// 			// ... custom code ...
 	// 		})
 
 	// 	tabs('tab2')
 	// 		.set({
-	// 			caption: 'First Tab'
+	// 			caption: 'Second Tab'
 	// 		})
 	// 		// Capture the change of any oz variable in the tab1 subject.
 	// 		.onChange('*', function(e) {
-	// 			this.set({ saved: false })
+	// 			// ... custom code ...
+	// 			this.fireSuper(e);
+	// 			// ... custom code ...
 	// 		})
-	// 		.onEvent('save', function(e) {
-	// 			db.save(this.get());
-	// 			this.set({ saved: true });
-	// 		})
-	// 		.onEvent('close', function(e) {
-	// 			this.fireEvent('save');
-	// 		})
-
 
 	// 	tabs('tab3')
 	// 		.set({
 	// 			selected: true,
 	// 			caption: 'Third Tab'
 	// 		})
-	// 		.onChange('selected', function(e) {
-	// 		})
-	// 		.onEvent('close', function(e) {
-	// 		});
 
 	// 	// We'll save this for later.
 	// 	var originalTab1Values = tabs('tab1').get();
@@ -710,9 +761,8 @@
 	// 	tabs('tab2').fireEvent('close');
 
 	// 	tabs('tab3').get(); // === { "selected": true, 
-	// 						//		 "caption": "Unnamed Tab", 
+	// 						//		 "caption": "Third Tab", 
 	// 						//		 "content": "Default content" }
-
 
 	// 	tabs('tab1').get('caption');  // === 'First Tab'
 	// 	tabs('tab2').get('caption');  // === 'Second Tab'
@@ -721,7 +771,7 @@
 	// 	tabs('tab2').get('selected'); // === false
 	// 	tabs('tab3').get('selected'); // === true
 		
-	// 	// Unselected the currently selected item and select tab2.
+	// 	// Unselect the currently selected item and select tab2.
 	// 	tabs('*').set({ selected: false })
 	// 	tabs('tab1').set({ selected: true });
 
@@ -729,7 +779,7 @@
 	// 	tabs('tab2').get('selected'); // === false
 	// 	tabs('tab3').get('selected'); // === false
 
-	// 	// Make the onChange event fire on all subjects.
+	// 	// Make the onChange event fire for 'select' on all tabs.
 	// 	tabs('*').touch('selected');
 
 	// 	// Set the content of all tabs.

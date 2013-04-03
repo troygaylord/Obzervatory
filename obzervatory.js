@@ -58,6 +58,7 @@ var obzervatory = (function (obzervatory) {
             namespace: namespace,
             defaultValues: {},
             defaultEventsCollection: {},
+            defaultOnChangeCollection: {},
             reset: function () {
                 pub.subjects = {};
                 pub.globals = { listeners: {}, watchers: {}, observers: [] };
@@ -129,7 +130,15 @@ var obzervatory = (function (obzervatory) {
                     } else {
                         pub.defaultEventsCollection = events || {};
                     }
-                }
+                };
+
+                setNs.defaultOnChanges = function (onChangeEvent) {
+                    if (onChangeEvent === undefined || onChangeEvent === null) {
+                        return pub.defaultOnChangeCollection;
+                    } else {
+                        pub.defaultOnChangeCollection = onChangeEvent || {};
+                    }
+                };
 
                 // setNs.defaultValues = {};
 
@@ -173,21 +182,48 @@ var obzervatory = (function (obzervatory) {
                 }
                 // If we have global events, we want the event to be called once
                 // for each subject.
-                if (Object.keys(pub.defaultEventsCollection).length > 0 &&
+                if (type === 'listeners' && 
+                        Object.keys(pub.defaultEventsCollection).length > 0 &&
                         pub.defaultEventsCollection[topic] !== undefined) {
+
                     var subjectCnt = Object.keys(pub.subjects).length;
 
                     for (var subject in pub.subjects) {
-                        if (pub.subjects.hasOwnProperty(subject)) {
-                            var item = {};
-                            item.callback = pub.defaultEventsCollection[topic];
-                            item.type = 'listener';
-                            item.subject = subject;
-                            item.topic = pub.subjects[subject].topic;
-                            topics = topics.concat(item);
+                        if (topicInfo.subject === subject || topicInfo.subject === '*') {
+                            // We'll use the global event only if it's not implemented already
+                            // implemented directly in the subject.
+                            if (!pvt.containsTopic(topics, subject, topic) && pub.subjects.hasOwnProperty(subject)) {
+                                var item = {};
+                                item.callback = pub.defaultEventsCollection[topic];
+                                item.type = 'listener';
+                                item.subject = subject;
+                                item.topic = topic;
+                                topics = topics.concat(item);
+                            }
+                        }
+                    }
+                } else if (type === 'watchers' && 
+                        Object.keys(pub.defaultOnChangeCollection).length > 0 &&
+                        pub.defaultOnChangeCollection[topic] !== undefined) {
+
+                    var subjectCnt = Object.keys(pub.subjects).length;
+
+                    for (var subject in pub.subjects) {
+                        if (topicInfo.subject === subject || topicInfo.subject === '*') {
+                            // We'll use the global onChange only if it's not implemented
+                            // directly in the subject.
+                            if (!pvt.containsTopic(topics, subject, topic) && pub.subjects.hasOwnProperty(subject)) {
+                                var item = {};
+                                item.callback = pub.defaultOnChangeCollection[topic];
+                                item.type = 'var';
+                                item.subject = subject;
+                                item.topic = topic;
+                                topics = topics.concat(item);
+                            }
                         }
                     }
                 }
+
                 // Loop through the matched topics, if we're dealing
                 // with variables (watching), we only want to pass back
                 // the topic information as it's given to us in the
@@ -342,6 +378,18 @@ var obzervatory = (function (obzervatory) {
                     }
                 }
                 return this;
+            },
+
+            fireSuper: function(e) {
+                if (e.type === 'vars') {
+                    if (pub.defaultOnChangeCollection.hasOwnProperty(e.topic)) {
+                        return pub.defaultOnChangeCollection[e.topic].apply(e.context || this, [e]);
+                    }
+                } else if (e.type === 'listeners') {
+                    if (pub.defaultEventsCollection.hasOwnProperty(e.topic)) {
+                        return pub.defaultEventsCollection[e.topic].apply(e.context || this, [e]);
+                    }
+                }
             },
 
             // Registers a variable watcher.
@@ -595,11 +643,11 @@ var obzervatory = (function (obzervatory) {
                     defaultValues;
 
                 // If the subject didn't already exists, add the defaultValues to it
-                // if they're available.
+                // if they're available. The default values are set silently.
                 if (subjectExists === false) {
                     defaultValues = obzervatory.defaultValues;
                     if (typeof defaultValues === 'object') {
-                        obzervatory(subject).set(defaultvalues);
+                        obzervatory(subject).set(defaultvalues, true);
                     }
                 }
                 return retSubject;
@@ -620,13 +668,26 @@ var obzervatory = (function (obzervatory) {
             // If the given attribute doesn't exist on obj, create it.
             ensureSubject: function (subject, defaultValue) {
                 // If the subject didn't already exist, make sure it gets its
-                // default values.
+                // default values. Default values are set silently.
                 var subjectDidntExist = !pub.subjects[subject];
                 pvt.ensureProperty(pub.subjects, subject, defaultValue);
                 if (subjectDidntExist && Object.keys(pub.defaultValues).length > 0) {
-                    pub.set(pub.defaultValues);
+                    pub.set(pub.defaultValues, true);
                 }
                 return pub.subjects[subject];
+            },
+
+            containsTopic: function(topics, subjectName, topicName) {
+                var topic,
+                    contains = false;
+
+                for (var i = 0; i < topics.length; i++) {
+                    if (topics[i].topic === topicName && topics[i].subject === subjectName) {
+                        contains = true;
+                        break;
+                    }
+                };
+                return contains;
             }
         };
 
@@ -640,6 +701,8 @@ var obzervatory = (function (obzervatory) {
             retNamespace,
             defaultValues = {},
             defaultEvents = {},
+            defaultOnChanges = {},
+            onChangeTopic,
             val,
             ns,
             i;
@@ -675,17 +738,27 @@ var obzervatory = (function (obzervatory) {
                 retNamespace = this.createNamespace(namespace);
             }
             if (useDefaults) {
-                // obzervatory(namespace).defaultVals(defaultVals);
                 // We can be passed values or events. So separate them here.
                 for (val in defaultVals) {
                     if (defaultVals.hasOwnProperty(val)) {
-                        if (typeof defaultVals[val] === 'function') {
+                        if (val === 'onChange') {
+                            // Loop through the onChange structure which can have multiple
+                            // default onChange events defined for multiple oz variables.
+                            for (onChangeTopic in defaultVals.onChange) {
+                                if (defaultVals.onChange.hasOwnProperty(onChangeTopic)) {
+                                    // Assign the callback to our default 'onChange'.
+                                    defaultOnChanges[onChangeTopic] = 
+                                        defaultVals.onChange[onChangeTopic];
+                                }
+                            }
+                        } else if (typeof defaultVals[val] === 'function') {
                             defaultEvents[val] = defaultVals[val];
                         } else {
                             defaultValues[val] = defaultVals[val];
                         }
                     }
                 }
+                retNamespace.defaultOnChanges(defaultOnChanges);
                 retNamespace.defaultVals(defaultValues);
                 retNamespace.defaultEvents(defaultEvents);
             }
