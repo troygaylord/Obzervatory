@@ -14,7 +14,8 @@ TODO
     property, looks like it may only be working for 
     listeners.
 -   Ensure all comments are up to date. 
-
+-   Return a structure from get(). This will match how we can 'set' with
+    a structure.
 
 Below gives some context to the Obzervatory code
 -----------------------------------------------------------
@@ -29,7 +30,6 @@ var models = oz.namespace('models');
 'observers' apply to listening and/or watching.
 
 */
-
 var obzervatory = (function (obzervatory) {
     'use strict';
 
@@ -250,22 +250,37 @@ var obzervatory = (function (obzervatory) {
 
             // Gets the value of a given variable (i.e. topic)
             get: function (topic) {
-                // If we were not passed params then we should get the 
+                var topicInfo = pvt.parseTopic(topic),
+                    values = {},
+                    vars,
+                    prop,
+                    value;
+
+                // If we were not passed params then we should get the
                 // current subject rather than a variable value.
                 if (topic === null || topic === undefined) {
-                    return pub.getSubject(pub.defaultSubject);
-                }
 
-                // Get and return the variable associated with the provided topic.
-                var topicInfo = pvt.parseTopic(topic),
-                    value;
-                // TODO: A better way?
-                if (pub.subjects[topicInfo.subject] &&
-                        pub.subjects[topicInfo.subject].vars &&
-                            pub.subjects[topicInfo.subject].vars[topicInfo.topic]) {
-                    value = pub.subjects[topicInfo.subject].vars[topicInfo.topic].value;
+                    // Return all oz variables for this topic in a structure.
+                    if (pub.subjects[topicInfo.subject] && pub.subjects[topicInfo.subject].vars) {
+                        vars = pub.subjects[topicInfo.subject].vars;
+                        for (prop in vars) {
+                            if (vars.hasOwnProperty(prop)) {
+                                values[prop] = vars[prop].value;
+                            }
+                        }
+                        return values;
+                    }
+                    // return pub.getSubject(pub.defaultSubject);
+                } else {
+                    // Get and return the variable associated with the provided topic.
+                    // TODO: A better way?
+                    if (pub.subjects[topicInfo.subject] &&
+                            pub.subjects[topicInfo.subject].vars &&
+                                pub.subjects[topicInfo.subject].vars[topicInfo.topic]) {
+                        value = pub.subjects[topicInfo.subject].vars[topicInfo.topic].value;
+                    }
+                    return value;
                 }
-                return value;
             },
 
             // - Set the value of a given topic.
@@ -522,6 +537,9 @@ var obzervatory = (function (obzervatory) {
                     topic,
                     excludeSubject;
 
+                if (_topic === undefined || _topic === null) {
+                    _topic = '*'
+                }
                 topicSplit = _topic.split(':-');
                 topic = topicSplit[0];
                 excludeSubject = topicSplit[1]

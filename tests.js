@@ -7,6 +7,7 @@
 /*
 
  TODO
+ 	-	Break tests up into small, more manageable bits sizes.
  	-	Pass previous value when an oz 'variable' changes.
 	-	Pass jsLint.
 	-	Add more comments.
@@ -26,16 +27,14 @@
 
 	// TODO: Pass context of Obzervatory to events. Doesn't have to be 'this'.
 	test('Tabs Example', function() {
-		expect(28);
+		expect(32);
 
 		// Create our 'tab' namespace and set some default values for all
 		// new subjects that are created in this namespace.
 		var tabs = oz('tabs', {
 			selected: false,
-			caption: 'Default Caption',
-			sel: 'yes'
+			caption: 'Default Caption'
 		}, false);
-
 
 		// Create our first subject, 'tab1'. 
 		// Attach a couple of event handlers to listen for 'save' and 'close' events.
@@ -76,7 +75,6 @@
 			ok(true, '"Observed" ' + ozEventInfoToString(e));
 		})
 
-
 		// We haven't set any values directly on 'tab1' yet but let's make sure
 		// we got our defaults.
 		ok(tabs('tab1').get('caption') === tabs.defaultVals().caption,
@@ -108,10 +106,11 @@
 
 		tabs('*').touch('selected');
 
+		// Example of accessing a subject via a variable, well... function really but
+		// the point is, you can "set it and forget it".
 		var tab1 = tabs().getSubject('tab1');
-		// tabs('*').set('selected', false);
+		tabs('*').set('selected', false);
 		tab1().set('selected', true);
-
 
 		tabs.destroy();
 	});
@@ -642,37 +641,108 @@
 		ns.destroy();
 	});
 
-	// test("Handle the unsubscribing, reseting and destroying namespaces, subjects and topics", function() {
-	// 	expect(6);
+	// test('TEMP Tab example', function() {
+	// 	expect(32);
 
-	// 	// TODO: Handle the unsubscribing, reseting and destroying namespaces, subjects and topics
+	// 	// Dummy 'database' object to mock with.
+	// 	var db = { 
+	// 		save: function(data) { 
+	// 			alert('Saved: \n\n' + JSON.stringify(data));
+	// 		}
+	// 	};
 
-	// 	var topic10Namespace1Listener = bb('topic10').in('namespace1').listen(function() {
-	// 		ok(true, 'topic10.namespace1');
+	// 	// Create our 'tab' namespace and set some default values for all
+	// 	// new subjects that are created in this namespace.
+	// 	var tabs = oz('tabs', {
+	// 		selected: false,
+	// 		saved: false,
+	// 		caption: 'Unnamed Tab',
+	// 		content: 'Default content'
 	// 	});
 
-	// 	var topic10Namespace2Listener = bb('topic10').in('namespace2').listen(function() {
-	// 		ok(true, 'topic10.namespace2');
-	// 	});
+	// 	tabs('tab1')
+	// 		.set({
+	// 			caption: 'First Tab'
+	// 		})
+	// 		// Capture the change of any oz variable in the tab1 subject.
+	// 		.onChange('*', function(e) {
+	// 			this.set({ saved: false })
+	// 		})
+	// 		.onEvent('save', function(e) {
+	// 			db.save(this.get());
+	// 			this.set({ saved: true });
+	// 		})
+	// 		.onEvent('close', function(e) {
+	// 			this.fireEvent('save');
+	// 			// ... perform closing operations.
+	// 		})
 
-	// 	var topic10Listener = bb('topic10').listen(function() {
-	// 		ok(true, 'topic10 in default namespace');
-	// 	});
+	// 	tabs('tab2')
+	// 		.set({
+	// 			caption: 'First Tab'
+	// 		})
+	// 		// Capture the change of any oz variable in the tab1 subject.
+	// 		.onChange('*', function(e) {
+	// 			this.set({ saved: false })
+	// 		})
+	// 		.onEvent('save', function(e) {
+	// 			db.save(this.get());
+	// 			this.set({ saved: true });
+	// 		})
+	// 		.onEvent('close', function(e) {
+	// 			this.fireEvent('save');
+	// 		})
 
-	// 	// 3 asserts
-	// 	bb('topic10').in('*').shout();
 
-	// 	// 2 asserts
-	// 	bb.delListener(topic10Namespace1Listener);
-	// 	bb('topic10').in('*').shout();
+	// 	tabs('tab3')
+	// 		.set({
+	// 			selected: true,
+	// 			caption: 'Third Tab'
+	// 		})
+	// 		.onChange('selected', function(e) {
+	// 		})
+	// 		.onEvent('close', function(e) {
+	// 		});
 
-	// 	// 1 asserts
-	// 	bb.delListener(topic10Namespace2Listener);
-	// 	bb('topic10').in('*').shout();
+	// 	// We'll save this for later.
+	// 	var originalTab1Values = tabs('tab1').get();
 
-	// 	bb.delListener(topic10Listener);
-	// 	// 0 asserts
-	// 	bb('topic10').in('*').shout();
+	// 	// Fir the tab2 'close' event which will then fire the tab2 'save' event.
+	// 	tabs('tab2').fireEvent('close');
+
+	// 	tabs('tab3').get(); // === { "selected": true, 
+	// 						//		 "caption": "Unnamed Tab", 
+	// 						//		 "content": "Default content" }
+
+
+	// 	tabs('tab1').get('caption');  // === 'First Tab'
+	// 	tabs('tab2').get('caption');  // === 'Second Tab'
+	// 	tabs('tab3').get('caption');  // === 'Third Tab'
+	// 	tabs('tab1').get('selected'); // === false
+	// 	tabs('tab2').get('selected'); // === false
+	// 	tabs('tab3').get('selected'); // === true
+		
+	// 	// Unselected the currently selected item and select tab2.
+	// 	tabs('*').set({ selected: false })
+	// 	tabs('tab1').set({ selected: true });
+
+	// 	tabs('tab1').get('selected'); // === true
+	// 	tabs('tab2').get('selected'); // === false
+	// 	tabs('tab3').get('selected'); // === false
+
+	// 	// Make the onChange event fire on all subjects.
+	// 	tabs('*').touch('selected');
+
+	// 	// Set the content of all tabs.
+	// 	tabs('*').set({ content: 'The fancy new content.' });
+
+	// 	// Set tab1 values back to what they were originally. 
+	// 	// This will fire events for values that have changed in the structure.
+	// 	// In this case 'selected' and 'content' have changed so any 
+	// 	// onChange events or observers would fire.
+	// 	tabs('tab1').set(originalTab1Values);
+
+	// 	tabs.destroy();
 	// });
 
 	// For display purposes, converts an oz event info object to a string.
