@@ -36,12 +36,12 @@
 			sel: 'yes'
 		}, false);
 
+
 		// Create our first subject, 'tab1'. 
 		// Attach a couple of event handlers to listen for 'save' and 'close' events.
 		tabs('tab1')
 			.onChange('selected', function(e) {
 				ok(true, 'Tab1 "selected" changed to "' + e.value + '".');
-				tabs('*:-tab1').set({ selected: false });
 			})
 			.onEvent('save', function(e) {
 				// Do your AJAX call to save your goods.
@@ -76,6 +76,7 @@
 			ok(true, '"Observed" ' + ozEventInfoToString(e));
 		})
 
+
 		// We haven't set any values directly on 'tab1' yet but let's make sure
 		// we got our defaults.
 		ok(tabs('tab1').get('caption') === tabs.defaultVals().caption,
@@ -106,6 +107,11 @@
 		ok(tabs('tab3').get('selected') === false, 'Tab3 "selected" = ' + tabs('tab3').get('selected'));
 
 		tabs('*').touch('selected');
+
+		var tab1 = tabs().getSubject('tab1');
+		// tabs('*').set('selected', false);
+		tab1().set('selected', true);
+
 
 		tabs.destroy();
 	});
