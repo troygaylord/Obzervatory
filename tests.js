@@ -7,6 +7,7 @@
 /*
 
  TODO
+ 	-	Pass previous value when an oz 'variable' changes.
 	-	Pass jsLint.
 	-	Add more comments.
 	-	Tighten up existing tests.
@@ -25,7 +26,7 @@
 
 	// TODO: Pass context of Obzervatory to events. Doesn't have to be 'this'.
 	test('LATEST Tabs Example', function() {
-		expect(15);
+		expect(22);
 
 		// Create our 'tab' namespace and set some default values for all
 		// new subjects that are created in this namespace.
@@ -94,6 +95,17 @@
 		ok(tabs('tab1').get('selected') === true, 'Tab1 "selected" = ' + tabs('tab1').get('selected'));
 		ok(tabs('tab2').get('selected') === false, 'Tab2 "selected" = ' + tabs('tab2').get('selected'));
 		ok(tabs('tab3').get('selected') === false, 'Tab3 "selected" = ' + tabs('tab3').get('selected'));
+
+		// Unselected the currently selected item.
+		tabs('*').set({ selected: false })
+		// select tab 2
+		tabs('tab2').set({ selected: true });
+
+		ok(tabs('tab1').get('selected') === false, 'Tab1 "selected" = ' + tabs('tab1').get('selected'));
+		ok(tabs('tab2').get('selected') === true, 'Tab2 "selected" = ' + tabs('tab2').get('selected'));
+		ok(tabs('tab3').get('selected') === false, 'Tab3 "selected" = ' + tabs('tab3').get('selected'));
+
+		tabs('*').touch('selected');
 
 		tabs.destroy();
 	});

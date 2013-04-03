@@ -378,7 +378,7 @@ var obzervatory = (function (obzervatory) {
                             ozVar = pub.subjects[subject].vars[topicInfo.topic];
                             if (ozVar) {
                                 // TODO: Ensure testing.
-                                pub.getSubject(subject)().fireEvent(ozVar.topic, [], 'watchers');
+                                pub.getSubject(subject)().fireEvent(ozVar.topic, [ozVar], 'watchers');
                             }
                         }
                     }
@@ -730,6 +730,7 @@ var obzervatory = (function (obzervatory) {
             throw "'namespace' parameter required";
         }
         // TODO: Ensure there's nothing left of our objects in the namespace when it's deleted.
+        // This gives us grief doing this here.
         // // delete all subjects
         // this(namespace)('*').destroy();
         // // delete all globals
