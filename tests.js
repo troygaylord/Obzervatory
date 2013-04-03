@@ -43,7 +43,6 @@
 				ok(true, 'Tab1 "selected" changed to "' + e.value + '".');
 			})
 			.onEvent('save', function(e) {
-				// Do your AJAX call to save your goods.
 				ok(true, e.subject + " has saved.");
 			});
 
@@ -52,7 +51,6 @@
 				ok(true, 'Tab2 "selected" changed to "' + e.value + '".');
 			})
 			.onEvent('save', function(e) {
-				// Do your AJAX call to save your goods.
 				ok(true, e.subject + " has saved.");
 			})
 			.onEvent('close', function(e) {
@@ -66,6 +64,9 @@
 			})
 			.onChange('selected', function(e) {
 				ok(true, 'Tab3 "selected" changed to "' + e.value + '".');
+			})
+			.onEvent('save', function(e) {
+				ok(true, e.subject + " has saved.");
 			})
 			.onEvent('close', function(e) {
 				ok(true, 'Tab3 close');
@@ -105,6 +106,7 @@
 		ok(tabs('tab3').get('selected') === false, 'Tab3 "selected" = ' + tabs('tab3').get('selected'));
 
 		tabs('*').touch('selected');
+		tabs('*').fireEvent('save');
 
 		// Example of accessing a subject via a variable, well... function really but
 		// the point is, you can "set it and forget it".

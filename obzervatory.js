@@ -57,6 +57,7 @@ var obzervatory = (function (obzervatory) {
             invalid: false,
             namespace: namespace,
             defaultValues: {},
+            defaultEvents: {},
             reset: function () {
                 pub.subjects = {};
                 pub.globals = { listeners: {}, watchers: {}, observers: [] };
@@ -92,22 +93,6 @@ var obzervatory = (function (obzervatory) {
                         return undefined;
                     }
                     subject = subject || defaultSubject;
-
-                    // if (subject) {
-                    //     pvt.buildSubject(subject);
-                    // }
-
-                    // // // If the subject doesn't exist yet and we have default values, 
-                    // // // apply the values to the new subject.
-                    // if (!pub.subjects.hasOwnProperty(subject)) {
-                    //     // pub.getSubject(subject)().set({ defaultkey: 'default value' });
-                    //     // this(subject)().set({ defaultkey: 'default value' });
-                    //     // TODO: Not a great way to reference the subject. Do it better.
-                    //     // obzervatory(subject).set(obzervatory(subject).defaultValues);
-                    //     // obzervatory(subject).set(obzervatory(subject).defaultValues);
-                    // }
-
-                    // subject = subject || defaultSubject || '*';
                     pub.defaultSubject = subject;
                     return pub;
                 };
@@ -136,7 +121,16 @@ var obzervatory = (function (obzervatory) {
                     } else {
                         pub.defaultValues = values || {};
                     }
+                };
+
+                setNs.defaultEvents = function (events) {
+                    if (events === undefined || events === null) {
+                        return pub.defaultEvents;
+                    } else {
+                        pub.defaultEvents = events || {};
+                    }
                 }
+
                 // setNs.defaultValues = {};
 
                 // setNs.defaultTopic = subject;
@@ -162,12 +156,7 @@ var obzervatory = (function (obzervatory) {
                 // Type will always be 'listener' or 'watcher', never 'vars' for fireEvent.
                 type = fireEventType || 'listeners';
 
-                // If there are any 'observers' with the given
-                // topic, append their subcriptions to the rest of the topics.
-                // if (pub.globals.observers.length > 0) {
-                //     topics = topics.concat(pub.globals.observers);
-                // }
-                // Get all of the topics that match our topic, subject and type.
+                // Get all of the topics that match our subject, topic and type.
                 topics = topics.concat(
                     pvt.getTopicsInSubject(topicInfo.subject, topicInfo.topic, type)
                 );
@@ -182,20 +171,21 @@ var obzervatory = (function (obzervatory) {
                         pub.globals[type]['*'].length > 0) {
                     topics = topics.concat(pub.globals[type]['*']);
                 }
-
-                if (type === 'listeners') {
-                    if (pub.globals.listeners['*'] &&
-                            pub.globals.listeners['*'].length > 0) {
-                        topics = topics.concat(pub.globals.listeners['*']);
+                // If we have global events, we want the event to be called once
+                // for each subject.
+                if (Object.keys(pub.defaultEvents).length > 0 &&
+                        pub.defaultEvents[topic] !== undefined) {
+                    var subjectCnt = Object.keys(pub.subjects).length;
+                    for (i = 0; i < subjectCnt; i += 1) {
+                        topics = topics.concat(pub.defaultEvents[topic]);
                     }
                 }
-
                 // Loop through the matched topics, if we're dealing
                 // with variables (watching), we only want to pass back
                 // the topic information as it's given to us in the
                 // arguments. This topic is slightly different than what's
                 // in our topic structure since we add the subject of the
-                // variable to it to give it more context.
+                // variable to give it more context.
                 for (i = 0; i < topics.length; i += 1) {
                     if (type === 'watchers') {
                         topicDetails = baggage;
@@ -214,7 +204,6 @@ var obzervatory = (function (obzervatory) {
                             observers[n].callback.apply(observers[n].context || this, topicDetails);
                         }
                     }
-
                     topics[i].callback.apply(topics[i].context || this, topicDetails);
                 }
             },
@@ -563,10 +552,11 @@ var obzervatory = (function (obzervatory) {
 
                 // Look in all subjects if true, otherwise only look in the subject provided.
                 if (subjectName === '*') {
-                    for (subject in pub.subjects) {
-                        if (pub.subjects.hasOwnProperty(subject)) {
+                    for (subject in subjects) {
+                        if (subjects.hasOwnProperty(subject)) {
                             // Recursive call
-                            this.getTopicsInSubject(subject, topicName, type);
+                            matches = matches.concat(
+                                this.getTopicsInSubject(subject, topicName, type));
                         }
                     }
                 } else {
@@ -575,7 +565,7 @@ var obzervatory = (function (obzervatory) {
                         subjects[subjectName].hasOwnProperty(type);
                     if (subjectExists) {
                         // Isolate our subject
-                        subject = pub.subjects[subjectName][type];
+                        subject = subjects[subjectName][type];
                         // Loop through subjects, in the given 'type', and get our topics
                         for (topic in subject) {
                             if (subject.hasOwnProperty(topic)) {
@@ -621,14 +611,14 @@ var obzervatory = (function (obzervatory) {
 
             // If the given attribute doesn't exist on obj, create it.
             ensureSubject: function (subject, defaultValue) {
-                // If the subject didn't already exist, make sure it gets its 
+                // If the subject didn't already exist, make sure it gets its
                 // default values.
                 var subjectDidntExist = !pub.subjects[subject];
                 pvt.ensureProperty(pub.subjects, subject, defaultValue);
                 if (subjectDidntExist && Object.keys(pub.defaultValues).length > 0) {
                     pub.set(pub.defaultValues);
                 }
-                return pub.subjects[subject];                
+                return pub.subjects[subject];
             }
         };
 
@@ -638,8 +628,11 @@ var obzervatory = (function (obzervatory) {
     // Hold all of the namespaces
     obzervatory.namespaces = [];
     obzervatory.namespace = function (namespace, defaultVals, autoGenerateSubject) {
-        var usedDefaults = false,
+        var useDefaults = false,
             retNamespace,
+            defaultValues = {},
+            defaultEvents = {},
+            val,
             ns,
             i;
 
@@ -651,7 +644,7 @@ var obzervatory = (function (obzervatory) {
         if (typeof namespace === 'string' && typeof defaultVals === 'boolean') {
             autoGenerateSubject = defaultVals;
         } else if (typeof namespace === 'string' && typeof defaultVals === 'object') {
-            usedDefaults = true;
+            useDefaults = true;
         }
 
         // By default, automatically generate a subject named after the 
@@ -673,10 +666,19 @@ var obzervatory = (function (obzervatory) {
             } else {
                 retNamespace = this.createNamespace(namespace);
             }
-            if (usedDefaults) {
-                // debugger;
+            if (useDefaults) {
                 // obzervatory(namespace).defaultVals(defaultVals);
-                retNamespace.defaultVals(defaultVals);
+                // We can be passed values or events. So separate them here.
+                for (val in defaultVals) {
+                    if (defaultVals.hasOwnProperty(val)) {
+                        if (typeof defaultVals[val] === 'function') {
+                            defaultEvents[val] = defaultVals[val];
+                        } else {
+                            defaultValues[val] = defaultVals[val];
+                        }
+                    }
+                }
+                retNamespace.defaultVals(defaultValues);
             }
         }
         return retNamespace;
