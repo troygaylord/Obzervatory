@@ -57,7 +57,7 @@ var obzervatory = (function (obzervatory) {
             invalid: false,
             namespace: namespace,
             defaultValues: {},
-            defaultEvents: {},
+            defaultEventsCollection: {},
             reset: function () {
                 pub.subjects = {};
                 pub.globals = { listeners: {}, watchers: {}, observers: [] };
@@ -125,9 +125,9 @@ var obzervatory = (function (obzervatory) {
 
                 setNs.defaultEvents = function (events) {
                     if (events === undefined || events === null) {
-                        return pub.defaultEvents;
+                        return pub.defaultEventsCollection;
                     } else {
-                        pub.defaultEvents = events || {};
+                        pub.defaultEventsCollection = events || {};
                     }
                 }
 
@@ -173,11 +173,19 @@ var obzervatory = (function (obzervatory) {
                 }
                 // If we have global events, we want the event to be called once
                 // for each subject.
-                if (Object.keys(pub.defaultEvents).length > 0 &&
-                        pub.defaultEvents[topic] !== undefined) {
+                if (Object.keys(pub.defaultEventsCollection).length > 0 &&
+                        pub.defaultEventsCollection[topic] !== undefined) {
                     var subjectCnt = Object.keys(pub.subjects).length;
-                    for (i = 0; i < subjectCnt; i += 1) {
-                        topics = topics.concat(pub.defaultEvents[topic]);
+
+                    for (var subject in pub.subjects) {
+                        if (pub.subjects.hasOwnProperty(subject)) {
+                            var item = {};
+                            item.callback = pub.defaultEventsCollection[topic];
+                            item.type = 'listener';
+                            item.subject = subject;
+                            item.topic = pub.subjects[subject].topic;
+                            topics = topics.concat(item);
+                        }
                     }
                 }
                 // Loop through the matched topics, if we're dealing
@@ -679,6 +687,7 @@ var obzervatory = (function (obzervatory) {
                     }
                 }
                 retNamespace.defaultVals(defaultValues);
+                retNamespace.defaultEvents(defaultEvents);
             }
         }
         return retNamespace;
