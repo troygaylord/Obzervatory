@@ -113,7 +113,9 @@ models('training').set(
 models.destroy();
 ```
 
-#### A tab management example with default events and variables.
+A tab management example with default events and variables
+----------------------------------------------------------
+
 ``` javascript
 // Dummy 'database' object to mock with.
 var db = { 
