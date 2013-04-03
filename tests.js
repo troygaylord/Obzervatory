@@ -26,7 +26,7 @@
 
 	// TODO: Pass context of Obzervatory to events. Doesn't have to be 'this'.
 	test('LATEST Tabs Example', function() {
-		expect(22);
+		expect(28);
 
 		// Create our 'tab' namespace and set some default values for all
 		// new subjects that are created in this namespace.
