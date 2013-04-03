@@ -23,9 +23,9 @@ Usage
 
 Below is a taste of what can be done with Obzervatory.
 
-When you're done with the few examples below (more examples will come), you can look 
+When you're done with the few examples below, you can look 
 deeper into Obzervatory by checking out the tests.js file in the root of the project. 
-It covers all of what it can do.
+It covers all of what Obzervatory is capable of.
 
 Basic Event Handling
 --------------------
