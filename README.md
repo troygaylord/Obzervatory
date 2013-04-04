@@ -178,7 +178,7 @@ tabs('tab3')
 // We'll save this for later.
 var originalTab1Values = tabs('tab1').get();
 
-// Fir the tab2 'close' event which will then fire the tab2 'save' event.
+// Fire the tab2 'close' event which will then fire the tab2 'save' event.
 tabs('tab2').fireEvent('close');
 
 tabs('tab3').get(); // === { "selected": true, 
