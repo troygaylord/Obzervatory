@@ -192,7 +192,7 @@ tabs('tab1').get('selected'); // === false
 tabs('tab2').get('selected'); // === false
 tabs('tab3').get('selected'); // === true
 
-// Unselect the currently selected item and select tab2.
+// Unselect the currently selected item and select tab1.
 tabs('*').set({ selected: false })
 tabs('tab1').set({ selected: true });
 
