@@ -213,8 +213,3 @@ tabs('*').set({ content: 'The fancy new content.' });
 tabs('tab1').set(originalTab1Values);
 
 tabs.destroy();
-<<<<<<< HEAD
-```
-=======
-```
->>>>>>> 299cbeb8b44176428b9c1c6e3a36a69bd2c37692
